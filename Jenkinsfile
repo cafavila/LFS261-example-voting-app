@@ -59,8 +59,7 @@ pipeline {
                 }
             }
         }
-    }
-    stages {
+    
         stage("result-build") {
             agent {
                 docker {
@@ -89,10 +88,85 @@ pipeline {
                 echo 'Packaging worker app'
             }
         }
+    }    
+        stage ('vote-build') {
+            agent {
+                docker {
+                    image 'python:2.7.16-slim'
+                    args '--user root'
+                }
+            }
+            when {
+                chanset '**/vote/**'
+            }
+            steps {
+                echo 'compilando vote app'
+                dir(path: 'vote') {
+                    sh 'pip install -r requeriments.txt'
+                }
+            }
+        }
+        stage ('vote-test') {
+            agent {
+                docker {
+                    image 'python:2.7.16-slim'
+                    args '--user root'
+                }
+            }
+            when {
+                chanset '**/vote/**'
+            }
+            steps {
+                echo 'Corre las pruebas unitarias de vote app'
+                dir(path: 'vote') {
+                    sh 'pip install -r requeriments.txt'
+                    sh 'nosetest -v'
+                }
+            }            
+        } 
+        stage ('vote-integration') {
+            agent any
+            when {
+                changeset '**/vote/**'
+                branch 'master'
+            }
+            steps {
+                echo 'Se corren las pruebas de integracion de vote app'
+                dir (path: 'vote') {
+                    sh 'sh integration_test.sh'
+                }
+            }
+        }
+        stage ('vote-docker-package') {
+            agent any
+            steps {
+                echo 'Empaquetando aplicacion vote app'
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerlogin') {
+                    // ./vote is the path to the Dockerfile that Jenkins will find from the Github repo
+                    def voteImage = docker.build("cafavila/vote:${env.GIT_COMMIT}", "./vote")
+                    voteImage.push()
+                    voteImage.push("${env.BRANCH_NAME}")
+                    voteImage.push("latest")
+                }
+            }
+        }
+            
+            stage ('deploy to dev') {
+                agent any
+                when {
+                    branch 'master'
+                }
+                steps {
+                    echo 'Deployando instavote con docker compose'
+                    sh 'docker compose up -d'
+                }
+            }
     }
+
     post {
         always {
-            echo 'Building multibranch pipeline for worker is completed..'
+            echo 'Construccion de aplicacion instavote is completed..'
         }
         failure {
             echo 'Algo fallo, revisar'
