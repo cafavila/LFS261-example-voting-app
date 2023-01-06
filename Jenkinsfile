@@ -1,12 +1,13 @@
 pipeline {
-    agent {
-        docker {
-            image 'maven:3.6.1-jdk-8-slim'
-            args '-v $HOME/.m2:root/.m2'
-        }
-    }
+    agent none
     stages {
         stage("worker-build") {
+            agent {
+                docker {
+                   image 'maven:3.6.1-jdk-8-slim'
+                   args '-v $HOME/.m2:root/.m2'
+                 }
+            }
             when {
                 changeset "**/worker/**"
             }            
@@ -56,6 +57,36 @@ pipeline {
                         workerImage.push('latest')
                     }
                 }
+            }
+        }
+    }
+    stages {
+        stage("result-build") {
+            agent {
+                docker {
+                    image 'node:8.16.0-alpine'
+                }
+            }
+            when {
+                changeset "**/result/**"
+            }
+            steps {
+                echo 'Compiling worker app'
+                dir('worker') {
+                    sh 'npm install'
+                }
+            }
+        }
+        stage("result-test") {
+            steps {
+                echo 'Running Unit Test on worker app'
+                sh 'npm install'
+                sh 'npm test'
+            }
+        }
+        stage("result-package") {
+            steps {
+                echo 'Packaging worker app'
             }
         }
     }
