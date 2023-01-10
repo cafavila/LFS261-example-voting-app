@@ -137,6 +137,7 @@ pipeline {
                 }
             }
         }
+        
         stage ('vote-docker-package') {
             agent any
             when {
@@ -147,11 +148,12 @@ pipeline {
                 echo 'Empaquetando aplicacion vote app'
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'dockerlogin') {
-                    // ./vote is the path to the Dockerfile that Jenkins will find from the Github repo
-                    def voteImage = docker.build("cafavila/vote:${env.GIT_COMMIT}", "./vote")
-                    voteImage.push()
-                    voteImage.push("${env.BRANCH_NAME}")
-                    voteImage.push("latest")
+                        // ./vote is the path to the Dockerfile that Jenkins will find from the Github repo
+                        def voteImage = docker.build("cafavila/vote:${env.GIT_COMMIT}", "./vote")
+                        voteImage.push()
+                        voteImage.push("${env.BRANCH_NAME}")
+                        voteImage.push("latest")
+                    }
                 }
             }
         }
@@ -206,5 +208,4 @@ pipeline {
      //       slackSend (channel: "instavote-cd", message: "Build Succeeded - ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)")
         }        
     }
-}
 }
