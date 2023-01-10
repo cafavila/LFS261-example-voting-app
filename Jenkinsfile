@@ -88,7 +88,7 @@ pipeline {
                 echo 'Packaging worker app'
             }
         }
-    }    
+        
         stage ('vote-build') {
             agent {
                 docker {
