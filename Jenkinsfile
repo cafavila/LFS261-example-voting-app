@@ -10,7 +10,7 @@ pipeline {
             }
             when {
                 changeset "**/worker/**"
-            }            
+            }         
             steps {
                 echo 'Compiling worker app'
                 dir('worker') {
@@ -202,4 +202,5 @@ pipeline {
      //       slackSend (channel: "instavote-cd", message: "Build Succeeded - ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)")
         }        
     }
+}
 }
