@@ -139,6 +139,10 @@ pipeline {
         }
         stage ('vote-docker-package') {
             agent any
+            when {
+                changeset '**/vote/**'
+                branch 'master'
+            }
             steps {
                 echo 'Empaquetando aplicacion vote app'
                 script {
