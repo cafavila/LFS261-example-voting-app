@@ -151,17 +151,42 @@ pipeline {
                 }
             }
         }
-            
-            stage ('deploy to dev') {
-                agent any
-                when {
-                    branch 'master'
-                }
-                steps {
-                    echo 'Deployando instavote con docker compose'
-                    sh 'docker compose up -d'
+
+        stage ('Sonarqube') {
+            agent any
+            when {
+                branch 'master'
+            }
+            environment {
+                sonarpath = tool 'SonarScanner'
+            }
+            steps {
+                echo 'Ejecutando Sonarqube Analisis....'
+                withSonarQubeEnv('sonar-instanvote') {
+                    sh "${sonarpath}/bin/sonar-scanner -Dproject.settings=sonar-project.properties -Dorg.jenkinsci.plugins.durabletask.BourneShellScript.HEARTBEAT_CHECK_INTERVAL=86400"
                 }
             }
+        }
+        stage ('Quality Gate') {
+            steps {
+                timeout(time: 1, units: 'HOURS') {
+                    // Parameter indicates whether to set pipeline to UNSTABLE if Quality Gate fails
+                    // true = set pipeline to UNSTABLE, false = don't
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+            
+        stage ('deploy to dev') {
+            agent any
+            when {
+                branch 'master'
+            }
+            steps {
+                echo 'Deployando instavote con docker compose'
+                sh 'docker compose up -d'
+            }
+        }
     }
 
     post {
