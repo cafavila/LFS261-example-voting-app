@@ -114,7 +114,7 @@ pipeline {
                 }
             }
             when {
-                chanset '**/vote/**'
+                changeset '**/vote/**'
             }
             steps {
                 echo 'Corre las pruebas unitarias de vote app'
