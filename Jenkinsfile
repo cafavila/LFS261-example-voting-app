@@ -71,7 +71,7 @@ pipeline {
             }
             steps {
                 echo 'Compiling worker app'
-                dir('worker') {
+                dir('result') {
                     sh 'npm install'
                 }
             }
