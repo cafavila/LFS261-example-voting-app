@@ -72,6 +72,7 @@ pipeline {
             steps {
                 echo 'Compiling worker app'
                 dir('result') {
+                    sh 'ls -ltr'
                     sh 'npm install'
                 }
             }
@@ -84,6 +85,7 @@ pipeline {
             }
             steps {
                 echo 'Running Unit Test on worker app'
+                sh 'pwd'
                 sh 'npm install'
                 sh 'npm test'
             }
