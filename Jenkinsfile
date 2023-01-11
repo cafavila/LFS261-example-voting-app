@@ -77,6 +77,11 @@ pipeline {
             }
         }
         stage("result-test") {
+            agent {
+                docker {
+                    image 'node:8.16.0-alpine'                
+                }
+            }
             steps {
                 echo 'Running Unit Test on worker app'
                 sh 'npm install'
